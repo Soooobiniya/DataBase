@@ -1,115 +1,117 @@
 import java.sql.*;
 import java.util.Scanner;
-import java.sql.SQLException;
 
 public class Main {
-	 static String id;
-	 static boolean check = true;
-	 
-	static String url = "jdbc:postgresql://localhost:5432/postgres"; // 제 것으로 바꿔서 test했어요!
-	static String user = "postgres";
-	static String password = "xasa0718!";
-	
-	static Statement st = null;
-	static ResultSet rs = null;
-	static Connection connect = null;
 
 	public static void main(String[] args) throws SQLException {
-
-		//String url = "jdbc:postgresql://localhost:5432/postgres"; // 제 것으로 바꿔서 test했어요!
-		//String user = "postgres";
-		//String password = "xasa0718!";
-
-		try {
-			//Statement st = null;
-			//ResultSet rs = null;
-			//Connection connect = null;
-
+		
+		String url = "jdbc:postgresql://localhost:5432/postgres";
+		String user = "postgres";
+		String password = "xasa0718!";
+		
+		
+		try
+        {
+			Statement st = null;
+			ResultSet rs = null;
+			Connection connect = null;
+			
 			Scanner scan = new Scanner(System.in);
 			int input = 0;
-
-			System.out.println("Connecting PostgreSQL database");
-			connect = DriverManager.getConnection(url, user, password);
-			st = connect.createStatement();
-
-			while (true) {
-				
-				 System.out.println("1. 로그인, 2. 회원가입");
-				 input = scan.nextInt();
-				 
-				 if (input == 1) { 
-					 id = login(scan, st, rs); 
-					 if (id.isEmpty()) {  
-					 }
-					 else
-						 break;
-				 }
-				 else if (input == 2) { 
-					 register(scan, st, rs); 
-					 id = login(scan, st, rs); 
-					 
-					 if (id.isEmpty()) { 
-					 }
-					 else
-						 break;
-					 } 
-				 else {
-					System.out.println("올바르지 않은 접근입니다.");
-					scan.close();
-					return; 
-					}
-			}
-	
-			/* 5명 이상, 같은 사람이 같은 책 여러번 예약 못하도록 TRIGGER 설정 */
-			/*String T1 = "CREATE OR REPLACE FUNCTION self_ignore() returns trigger AS $$ DECLARE BEGIN IF exists(select n_id from n_res where n_id = new.n_id and u_id = '"
-					+ id + "') THEN return null; ELSE return New; END IF; END; $$ LANGUAGE 'plpgsql'; create trigger T1"
-					+ " before insert on n_res for each row execute procedure self_ignore();"; 
-
-			st.executeUpdate(T1);
-
-			String T2 = "CREATE OR REPLACE FUNCTION ignore() returns trigger AS $$ DECLARE BEGIN IF (select count(*) from n_res where n_id = new.n_id) > 5 "
-					+ "THEN return null; ELSE return New; END IF; END; $$ LANGUAGE 'plpgsql'; create trigger T2"
-					+ " before insert on n_res for each row execute procedure ignore();"; 
-
-			st.executeUpdate(T2); //(db엔 생성되어 있기 때문에 주석 처리 해놨습니다!) */
-					
-				while (true) {
-					System.out.println("0. 종료 , 1. 도서 검색 , 2. 도서 대여 , 3. 도서 반납 , 4. 신규 도서 조회 , 5. 신규 도서 예약 , 6. 맞춤 도서 선택");
-					input = scan.nextInt();
-					if (input == 0) {
-						break;
-					} else if (input == 1) {
-						BookSearch(scan, st, rs);
-					} else if (input == 2) {
-						BookLent(scan, st, rs);
-					} else if (input == 3) {
-						BookReturn(scan, st, rs);
-					} else if (input == 4) {
-						NewBookInquiry(scan, st, rs);
-					} else if (input == 5) {
-						NewReservation(scan, st, rs);
-					} else if (input == 6) {
-						SelectCustomBook(scan, st, rs);
-					} else {
-						System.out.println("올바르지 않은 접근입니다.");
-						continue;
-					}
-				}
-		} catch (SQLException e) {
-					e.printStackTrace();
-		} finally {
-			try {
-				if (rs != null) rs.close();
-				if (connect != null) connect.close();
-				if (st != null) st.close();
-			} catch (SQLException ex) {
-			throw ex;
-			}
+			String id = "";
 			
-		}
+            System.out.println("Connecting PostgreSQL database");
+            connect = DriverManager.getConnection(url, user, password);
+            st = connect.createStatement();
+            
+            if(connect != null) {
+            	
+            	/* 5명 이상, 같은 사람이 같은 책 여러번 예약 못하도록 TRIGGER 설정 */
+    			/*String T1 = "CREATE OR REPLACE FUNCTION self_ignore() returns trigger\r\n"
+    					+ "AS $$ DECLARE BEGIN IF exists(select n_id from n_res where n_id = new.n_id and u_id = '"+ id + "') THEN\r\n"
+    					+ "return null; ELSE return New; END IF;\r\n"
+    					+ "END; $$ LANGUAGE 'plpgsql'; create trigger T1\r\n"
+    					+ "before insert on n_res for each row\r\n"
+    					+ "execute procedure self_ignore();"; 
+
+    			st.executeUpdate(T1);
+
+    			String T2 = "CREATE OR REPLACE FUNCTION full_ignore() returns trigger\r\n"
+    					+ "AS $$ DECLARE BEGIN IF (select count(*) from n_res where n_id = new.n_id) > 5 THEN\r\n"
+    					+ "return null; ELSE return New; END IF;\r\n"
+    					+ "END; $$ LANGUAGE 'plpgsql'; create trigger T2\r\n"
+    					+ "before insert on n_res for each row\r\n"
+    					+ "execute procedure full_ignore();"; 
+
+    			st.executeUpdate(T2);*/
+            	
+            	
+            	System.out.println("1. 로그인, 2. 회원가입");
+            	input = scan.nextInt();
+            	
+            	if(input == 1) {
+            		id = login(scan, st, rs);
+            		if(id.isEmpty()) {
+            			return;
+            		}
+            	}
+            	else if(input == 2) {
+            		register(scan, st, rs);
+            		System.out.println("로그인을 진행하겠습니다.");
+            		id = login(scan, st, rs);
+            		if(id.isEmpty()) {
+            			return;
+            		}
+            	}
+            	else {
+            		System.out.println("올바르지 않은 접근입니다.");
+            		return;
+            	}
+            	
+            	while(true) {
+            		System.out.println("0. 종료 , 1. 도서 검색 , 2. 도서 대여 , 3. 도서 반납 , 4. 신규 도서 조회 , 5. 신규 도서 예약 , 6. 맞춤 도서 선택");
+            		input = scan.nextInt();
+            		if(input == 0) {
+            			break;
+            		}
+            		else if(input == 1) {
+            			BookSearch(scan, st, rs);
+            		}
+            		else if(input == 2) {
+            			BookLent(id, scan, st, rs);
+            		}
+            		else if(input == 3) {
+            			BookReturn(id, scan, st, rs);
+            		}
+            		else if(input == 4) {
+            			NewBookInquiry(scan, st, rs);
+            		}
+            		else if(input == 5) {
+            			NewReservation(id, scan, st, rs);
+            		}
+            		else if(input == 6) {
+            			SelectCustomBook(scan, st, rs);
+            		}
+            		else {
+            			System.out.println("올바르지 않은 접근입니다.");
+            			continue;
+            		}
+            	}
+                if(rs != null)
+                	rs.close();
+                if(st != null)
+                	st.close();
+                if(connect != null)
+                	connect.close();
+            }
+            else {
+                throw new SQLException("Connection fail");
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        }
 	}
-
-
+	
 	public static String login(Scanner sc, Statement st, ResultSet rs) throws SQLException {
 		sc.nextLine();
 		System.out.println("아이디를 입력하세요");
@@ -119,42 +121,35 @@ public class Main {
 		String query = "";
 		query = "select u_id from users where u_id = '" + id + "' and pw = '" + pw + "';";
 		rs = st.executeQuery(query);
-		if (rs.next()) {
+		if(rs.next()) {
 			System.out.println("로그인 성공");
-			check = false;
 			return rs.getString("u_id");
 		}
 		System.out.println("로그인 실패");
 		return "";
 	}
-
-	public static void register(Scanner sc, Statement st, ResultSet rs) throws SQLException {
-		
-			sc.nextLine();
-			System.out.println("아이디를 입력하세요");
-			String id = sc.nextLine();
-			
-			String query = "";
-			query = "select u_id from users where u_id='" + id + "';";
-			rs = st.executeQuery(query);
-			
-			if(rs.next()) {
-				System.out.println("중복된 아이디가 있습니다");
-				register(sc, st, rs);
-			}
-			else {
-				System.out.println("패스워드를 입력하세요");
-				String pw = sc.nextLine();
-				query = "insert into users values('" + id + "', '" + pw + "');";
-				st.executeUpdate(query);
-				System.out.println("회원가입이 완료되었습니다.");
-			}
 	
-		
-		
-		
+	public static void register(Scanner sc, Statement st, ResultSet rs) throws SQLException {
+		sc.nextLine();
+		System.out.println("아이디를 입력하세요");
+		String id = sc.nextLine();
+		String query = "";
+		query = "select u_id from users where u_id = '" + id + "';";
+		rs = st.executeQuery(query);
+		if(rs.next()) {
+			System.out.println("중복된 아이디가 있습니다");
+			register(sc, st, rs);
+		}
+		else {
+			System.out.println("패스워드를 입력하세요");
+			String pw = sc.nextLine();
+			query = "insert into users values('" + id + "', '" + pw + "');";
+			st.executeUpdate(query);
+			System.out.println("회원가입이 완료되었습니다");
+		}
+		return;
 	}
-
+	
 	public static void BookSearch(Scanner sc, Statement st, ResultSet rs) throws SQLException {
 		sc.nextLine();
 		System.out.println("찾고 싶은 도서 혹은 저자를 입력하세요.");
@@ -175,8 +170,8 @@ public class Main {
 					num + "\tBook ID: " + b_id + "  | 도서: " + bName + "   | 저자: " + wName + "   | 발행년도: " + byear);
 		}
 	}
-
-	public static void BookLent(Scanner sc, Statement st, ResultSet rs) throws SQLException {
+	
+	public static void BookLent(String id, Scanner sc, Statement st, ResultSet rs) throws SQLException {
 		sc.nextLine();
 		System.out.println("대여할 도서의 Book ID를 입력하세요.");
 		int b_id = sc.nextInt();
@@ -195,8 +190,8 @@ public class Main {
 				System.out.println("이미 대여 중인 도서입니다.");
 		}
 	}
-
-	public static void BookReturn(Scanner sc, Statement st, ResultSet rs) throws SQLException {
+	
+	public static void BookReturn(String id, Scanner sc, Statement st, ResultSet rs) throws SQLException {
 		int cnt = 0;
 		rs = st.executeQuery("select count(*) from res where u_id = '" + id + "';");
 		while (rs.next()) {
@@ -265,8 +260,7 @@ public class Main {
 
 		}
 	}
-
-
+	
 	public static void NewBookInquiry(Scanner sc, Statement st, ResultSet rs) throws SQLException {
 		sc.nextLine();
 		System.out.println("찾고 싶은 신규 도서 혹은 저자를 입력하세요.");
@@ -289,15 +283,15 @@ public class Main {
 		}
 
 	}
-
 	
-	public static void NewReservation(Scanner sc, Statement st, ResultSet rs) throws SQLException {
+	public static void NewReservation(String id, Scanner sc, Statement st, ResultSet rs) throws SQLException {
 		System.out.println("1. 신규 도서 예약\t2. 내 예약 조회\t3. 예약 취소");
 		int input = sc.nextInt();
 		if (input == 1) {
 			System.out.println("예약할 도서의 Book ID를 입력하세요.");
 			int inNID = sc.nextInt();
 			int n_id = 0;
+			int count = 0;
 			String query = "";
 			query = "select n_id from NBook where n_id = " + inNID + ";";
 			rs = st.executeQuery(query);
@@ -309,17 +303,35 @@ public class Main {
 				System.out.println("신규 목록에 없는 도서입니다.");
 			}
 			else {
-				rs = st.executeQuery("select n_id, nbName, enter from NBook where n_id = " + inNID + ";");
-				
-				if (rs.next()) {
-					n_id = rs.getInt("n_id");
-					String nbName = rs.getString("nbName");
-					int enter = rs.getInt("enter");
-							
-					st.executeUpdate("insert into n_res values(default, '" + id + "', " + n_id + ", '" + nbName + "', " + enter + ");");
-				    System.out.println("예약이 완료되었습니다. 해당 도서는 " + enter + " 이후부터 대여 가능합니다.");
+				rs = st.executeQuery("select * from n_res where n_id = '"+ n_id +"' and u_id = '" + id + "';");
+				int check = 0;
+				while(rs.next()) {
+					check = rs.getInt("nr_id");
 				}
-				
+				if(check == 0) {
+					rs = st.executeQuery("select count(*) from n_res where n_id = " + n_id + ";");
+					while(rs.next()) {
+						count = rs.getInt("count");
+					}
+					if(count > 5) {
+						System.out.println("예약이 다 찼습니다.");
+					}
+					else {
+						rs = st.executeQuery("select n_id, nbName, enter from NBook where n_id = " + inNID + ";");
+						
+						if (rs.next()) {
+							n_id = rs.getInt("n_id");
+							String nbName = rs.getString("nbName");
+							int enter = rs.getInt("enter");
+									
+							st.executeUpdate("insert into n_res values(default, '" + id + "', " + n_id + ", '" + nbName + "', " + enter + ");");
+						    System.out.println("예약이 완료되었습니다. 해당 도서는 " + enter + " 이후부터 대여 가능합니다.");
+						}
+					}
+				}
+				else {
+					System.out.println("이미 예약되어있습니다.");
+				}
 			}
 			
 		}
@@ -380,7 +392,6 @@ public class Main {
 		}
 	}
 	
-	
 	public static void SelectCustomBook(Scanner sc, Statement st, ResultSet rs) throws SQLException {
 		System.out.println("원하는 기준을 선택하세요.");
 		System.out.println("1. 평점 , 2. 대여횟수 , 3. 종합");
@@ -433,10 +444,6 @@ public class Main {
 				num++;
 				System.out.println(num + "\tBook ID: " + b_id + "  | 도서: " + bName + "   | 평점: " + avg + "   | 대여횟수: " + count);
 			}
-			
 		}
-
 	}
-
-
 }
